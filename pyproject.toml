@@ -1,0 +1,15 @@
+[project]
+name = "aidiff"
+version = "0.1.0"
+description = "AI-assisted git diff review CLI"
+requires-python = ">=3.10"
+
+dependencies = [
+  "typer>=0.12",
+  "google-generativeai>=0.4.0",
+  "pydantic>=2.0",
+  "rich>=13.0"
+]
+
+[project.scripts]
+aidiff = "aidiff.cli:app"
