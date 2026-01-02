@@ -7,6 +7,7 @@ def get_staged_diff() -> str:
         # Captures output rather than printing to terminal
         capture_output=True,
         # Makes output strings rather than bytes
-        text=True
+        text=True,
+        encoding="utf-8"
     )
     return result.stdout.strip()
