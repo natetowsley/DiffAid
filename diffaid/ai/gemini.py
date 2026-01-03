@@ -33,7 +33,12 @@ class GeminiEngine(ReviewEngine):
     def __init__(self, model="gemini-2.5-flash"):
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
-            raise RuntimeError("GEMINI_API_KEY is not set")
+            raise RuntimeError("GEMINI_API_KEY is not set.\n"
+                "Get a free key at: https://aistudio.google.com/apikey\n"
+                "Then set it: \n" \
+                "\tMac/Linux: export GEMINI_API_KEY='your-key-here'\n" \
+                "\tWindows: $env:GEMINI_API_KEY='your-key-here'"
+            )
 
         self.client = genai.Client(
             http_options={'api_version': 'v1'},
