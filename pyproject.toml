@@ -3,6 +3,24 @@ name = "diffaid"
 version = "0.1.0"
 description = "AI-assisted git diff review CLI"
 requires-python = ">=3.10"
+authors = [
+  {name = "Nathan Towsley", email = "natetowsley@gmail.com"},
+]
+readme = "README.md"
+license = {file = "LICENSE"}
+keywords = ["git", "diff", "ai", "code-review", "cli", "gemini"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Version Control :: Git",
+    "Environment :: Console",
+]
 
 dependencies = [
   "typer>=0.12",
@@ -13,3 +31,6 @@ dependencies = [
 
 [project.scripts]
 diffaid = "diffaid.cli:app"
+
+[project.urls]
+Repository = "https://github.com/natetowsley/diffaid"

@@ -1,6 +1,5 @@
 .venv/
 venv/
 env/
-commands
 __pycache__/
 *.egg-info/
