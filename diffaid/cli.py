@@ -3,7 +3,10 @@ from rich.console import Console
 from diffaid.git import get_staged_diff
 from diffaid.ai.gemini import GeminiEngine
 
-app = typer.Typer()
+app = typer.Typer(
+    help="AI-assisted git diff review CLI",
+    add_completion=False
+)
 console = Console()
 
 @app.command()
@@ -26,7 +29,11 @@ def check():
     """
 
     # Retrieve staged git changes
-    diff = get_staged_diff()
+    try:
+        diff = get_staged_diff()
+    except RuntimeError as error:
+        console.print(f"[red]Error:[/red] {error}")
+        raise typer.Exit(2)
 
     if not diff:
         console.print("[green]No staged changes detected.[/green]")
@@ -41,23 +48,27 @@ def check():
         raise typer.Exit(2)
 
     # Diff summary
-    console.print(f"\n[bold]Summary:[/bold] {result.summary}\n\n---\n")
+    console.print(f"\n[bold]Summary:[/bold] {result.summary}\n")
+    console.print("\n---\n")
 
     has_errors = False
     has_warnings = False
 
     # Finding contents
-    for f in result.findings:
-        if f.severity == "error":
-            has_errors = True
-        elif f.severity == "warning":
-            has_warnings = True
+    if not result.findings:
+        console.print("[green]No issues found![/green]\n")
+    else:
+        for f in result.findings:
+            if f.severity == "error":
+                has_errors = True
+            elif f.severity == "warning":
+                has_warnings = True
 
-        color = {"error": "red", "warning": "yellow", "note": "cyan"}[f.severity]
-        console.print(f"[{color}]{f.severity.upper()}[/]: {f.message}")
-        if f.file:
-            console.print(f"[bold]  → {f.file} {f.lines or ''}[/bold]")
-        console.print()
+            color = {"error": "red", "warning": "yellow", "note": "cyan"}[f.severity]
+            console.print(f"[{color}]{f.severity.upper()}[/]: {f.message}")
+            if f.file:
+                console.print(f"[bold]  → {f.file} {f.lines or ''}[/bold]")
+            console.print()
 
     # Count findings
     counts = {"error": 0, "warning": 0, "note": 0}
@@ -65,11 +76,10 @@ def check():
         counts[f.severity] += 1
     
     console.print("---\n")
-    console.print(f"[bold]Found:[/bold] {counts['error']} errors, "
-                  f"{counts['warning']} warnings, {counts['note']} notes")
+    console.print(f"[bold]Found:[/bold] {counts['error']} error{'s' if counts['error'] != 1 else ''}, "
+                  f"{counts['warning']} warning{'s' if counts['warning'] != 1 else ''}, "
+                  f"{counts['note']} note{'s' if counts['note'] != 1 else ''}")
 
     if has_errors:
         raise typer.Exit(1)
-    if has_warnings:
-        raise typer.Exit(0)
     raise typer.Exit(0)
