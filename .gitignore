@@ -1,5 +1,30 @@
+# Virtual environments
 .venv/
 venv/
 env/
+
+# Python artifacts
 __pycache__/
+*.pyc
+*.pyo
 *.egg-info/
+
+# Build artifacts (ADD THESE)
+dist/
+build/
+*.whl
+*.tar.gz
+
+# Test artifacts
+.coverage
+htmlcov/
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
