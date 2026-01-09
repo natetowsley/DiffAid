@@ -1,4 +1,5 @@
 import typer
+import json
 from rich.console import Console
 from diffaid.git import get_staged_diff
 from diffaid.ai.gemini import GeminiEngine
@@ -10,7 +11,13 @@ app = typer.Typer(
 console = Console()
 
 @app.command()
-def check():
+def check(
+    json_output: bool = typer.Option(
+        False,
+        "--json",
+        help="Output raw JSON instead of formatted text"
+    )
+):
     """
     Review staged git changes with AI.
     
@@ -36,7 +43,10 @@ def check():
         raise typer.Exit(2)
 
     if not diff:
-        console.print("[green]No staged changes detected.[/green]")
+        if json_output:
+            print(json.dumps({"message": "No staged changes detected."}))
+        else:
+            console.print("[green]No staged changes detected.[/green]")
         raise typer.Exit(0)
     
     # Set engine and retrieve AI response
@@ -44,8 +54,21 @@ def check():
         engine = GeminiEngine()
         result = engine.review(diff)
     except RuntimeError as error:
-        console.print(f"[red]Error:[/red] {error}")
+        if json_output:
+            print(json.dumps({"error": str(error)}))
+        else:
+            console.print(f"[red]Error:[/red] {error}")
         raise typer.Exit(2)
+    
+    # JSON output mode
+    if json_output:
+        # Convert Pydantic model to dict, then to JSON
+        output = result.model_dump()
+        print(json.dumps(output, indent=2))
+
+        # Exit code based on findings
+        has_errors = any(f.severity == "error" for f in result.findings)
+        raise typer.Exit(1 if has_errors else 0)
 
     # Diff summary
     console.print(f"\n[bold]Summary:[/bold] {result.summary}\n")
