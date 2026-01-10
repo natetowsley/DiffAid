@@ -16,6 +16,11 @@ def check(
         False,
         "--json",
         help="Output raw JSON instead of formatted text"
+    ),
+    strict: bool = typer.Option(
+        False,
+        "--strict",
+        help="Treat warnings as errors (exit code 1)"
     )
 ):
     """
@@ -28,6 +33,12 @@ def check(
     
       # Basic review
       $ diffaid
+
+      # JSON output
+      $ diffaid --json
+
+      # Strict mode (warnings cause failures)
+      $ diffaid --strict
     
     Exit Codes:
       0 - No errors found
@@ -60,22 +71,26 @@ def check(
             console.print(f"[red]Error:[/red] {error}")
         raise typer.Exit(2)
     
+    has_errors = any(f.severity == "error" for f in result.findings)
+    has_warnings = any(f.severity == "warning" for f in result.findings)
+    should_fail = has_errors or (strict and has_warnings)
+    
     # JSON output mode
     if json_output:
         # Convert Pydantic model to dict, then to JSON
         output = result.model_dump()
+        
+        # Strict mode condition
+        if strict:
+            output["strict_mode"] = True
+            output["exit_code"] = 1 if should_fail else 0
+        
         print(json.dumps(output, indent=2))
-
-        # Exit code based on findings
-        has_errors = any(f.severity == "error" for f in result.findings)
-        raise typer.Exit(1 if has_errors else 0)
+        raise typer.Exit(1 if should_fail else 0)
 
     # Diff summary
     console.print(f"\n[bold]Summary:[/bold] {result.summary}\n")
     console.print("\n---\n")
-
-    has_errors = False
-    has_warnings = False
 
     # Finding contents
     if not result.findings:
@@ -102,7 +117,10 @@ def check(
     console.print(f"[bold]Found:[/bold] {counts['error']} error{'s' if counts['error'] != 1 else ''}, "
                   f"{counts['warning']} warning{'s' if counts['warning'] != 1 else ''}, "
                   f"{counts['note']} note{'s' if counts['note'] != 1 else ''}")
+    
+    if strict and has_warnings:
+        console.print("\n[yellow]Strict Mode: Treating warnings as errors[/yellow]")
 
-    if has_errors:
+    if should_fail:
         raise typer.Exit(1)
     raise typer.Exit(0)
