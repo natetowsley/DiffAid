@@ -50,7 +50,6 @@ def check(
     about potential issues before you commit.
     
     Example Usage:
-    
       # Quick overview (default)
       $ diffaid
 
@@ -62,7 +61,10 @@ def check(
 
       # Strict mode (warnings cause failures)
       $ diffaid --strict
-    
+
+      # Show installed version
+      $ diffaid --version
+
     Exit Codes:
       0 - No errors found
       1 - Errors found, or warnings in strict mode
