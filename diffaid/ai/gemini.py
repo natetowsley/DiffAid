@@ -4,10 +4,25 @@ from google import genai
 from diffaid.ai.base import ReviewEngine
 from diffaid.models import ReviewResult
 from pydantic import ValidationError
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 from pathlib import Path
 
-load_dotenv()
+def _load_env() -> str | None:
+    """
+    Load environment variables from a .env file.
+
+    - Search for .env starting from the user's current working directory (cwd),
+      not from the installed package location (site-packages).
+    - Return the resolved .env path (string) if found, else None.
+    """
+    dotenv_path = find_dotenv(usecwd=True)
+    if dotenv_path:
+        load_dotenv(dotenv_path=dotenv_path, override=False)
+        return dotenv_path
+
+    return None
+
+DOTENV_PATH = _load_env()
 
 SEVERITY_GUIDELINES = """
 Severity definitions (use these consistently):
@@ -157,8 +172,8 @@ class GeminiEngine(ReviewEngine):
     def __init__(self, model="gemini-2.5-flash"):
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
-            env_file = Path(".env")
-            if env_file.exists():
+            cwd = Path.cwd()
+            if DOTENV_PATH:
                 msg = (
                     "GEMINI_API_KEY not found in .env file.\n"
                     "Check that your .env contains: GEMINI_API_KEY=your-key-here"
