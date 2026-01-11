@@ -44,8 +44,9 @@ build-backend = "setuptools.build_meta"
 [project.scripts]
 diffaid = "diffaid.cli:app"
 
-[tool.setuptools]
-packages = ["diffaid"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["diffaid*"]
 
 [project.urls]
 Repository = "https://github.com/natetowsley/diffaid"
