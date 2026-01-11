@@ -5,6 +5,7 @@ from diffaid.ai.base import ReviewEngine
 from diffaid.models import ReviewResult
 from pydantic import ValidationError
 from dotenv import load_dotenv
+from pathlib import Path
 
 load_dotenv()
 
@@ -156,10 +157,23 @@ class GeminiEngine(ReviewEngine):
     def __init__(self, model="gemini-2.5-flash"):
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
-            raise RuntimeError("GEMINI_API_KEY is not set.\n"
-                "Create a .env file in root with: GEMINI_API_KEY=your-key-here\n"
-                "Or get a free key at: https://aistudio.google.com/apikey"
-            )
+            env_file = Path(".env")
+            if env_file.exists():
+                msg = (
+                    "GEMINI_API_KEY not found in .env file.\n"
+                    "Check that your .env contains: GEMINI_API_KEY=your-key-here"
+                )
+            else:
+                msg = (
+                    "GEMINI_API_KEY not configured.\n\n"
+                    "Option 1 - .env file (recommended):\n"
+                    "  Create .env file: GEMINI_API_KEY=your-key\n\n"
+                    "Option 2 - Environment variable:\n"
+                    "  Mac/Linux: export GEMINI_API_KEY=your-key\n"
+                    "  Windows: $env:GEMINI_API_KEY='your-key'\n\n"
+                    "Get a free key at: https://aistudio.google.com/apikey"
+                )
+            raise RuntimeError(msg)
 
         self.client = genai.Client(
             http_options={'api_version': 'v1'},
